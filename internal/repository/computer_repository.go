@@ -109,7 +109,7 @@ func (r *ComputerRepository) Delete(id string) error {
 
 func (r *ComputerRepository) CountByEmployee(employeeAbbr string) (int, error) {
 	var count int
-	query := `SELECT COUNT(*) FROM computers WHERE employee_abbreviation = $1`
+	query := `SELECT COUNT(DISTINCT mac_address) FROM computers WHERE employee_abbreviation = $1`
 	err := r.db.QueryRow(query, employeeAbbr).Scan(&count)
 	return count, err
 }

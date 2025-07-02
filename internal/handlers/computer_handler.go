@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"greenbone-computer-inventory/internal/models"
 	"greenbone-computer-inventory/internal/repository"
 	"net/http"
@@ -100,5 +103,27 @@ func (h *ComputerHandler) DeleteComputer(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
+type NotificationPayload struct {
+	Level                string `json:"level"`
+	EmployeeAbbreviation string `json:"employeeAbbreviation"`
+	Message              string `json:"message"`
+}
+
 func (h *ComputerHandler) sendNotification(employeeAbbr string, count int) {
+	payload := NotificationPayload{
+		Level:                "warning",
+		EmployeeAbbreviation: employeeAbbr,
+		Message:              fmt.Sprintf("Employee %s has %d computers assigned", employeeAbbr, count),
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+
+	resp, err := http.Post("http://localhost:8080/api/notify", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
 }

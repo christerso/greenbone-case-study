@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS computers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     computer_name VARCHAR(255) NOT NULL,
     ip_address INET NOT NULL,
-    mac_address VARCHAR(17) NOT NULL UNIQUE,
+    mac_address VARCHAR(17) NOT NULL,
     employee_abbreviation VARCHAR(3),
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

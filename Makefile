@@ -1,4 +1,4 @@
-.PHONY: postgres postgres-stop postgres-clean build run migrate-up migrate-down migrate-create db-tables db-computers help
+.PHONY: postgres postgres-stop postgres-clean notification-service notification-stop build run migrate-up migrate-down migrate-create db-tables db-computers help
 
 include .env
 export
@@ -26,6 +26,19 @@ postgres-clean: postgres-stop
 	@echo "Cleaning up PostgreSQL data..."
 	docker volume rm $$(docker volume ls -q --filter name=postgres) 2>/dev/null || true
 
+notification-service:
+	@echo "Starting notification service..."
+	docker run -d \
+		--name greenbone-notification \
+		-p 8080:8080 \
+		greenbone/exercise-admin-notification
+	@echo "Notification service running on port 8080"
+
+notification-stop:
+	@echo "Stopping notification service..."
+	docker stop greenbone-notification || true
+	docker rm greenbone-notification || true
+
 build:
 	go build -o bin/computer-inventory ./cmd
 
@@ -47,14 +60,19 @@ db-tables:
 db-computers:
 	docker exec -it $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT * FROM computers;"
 
+db-clear:
+	docker exec $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "DELETE FROM computers;"
+
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  postgres       - Start PostgreSQL container"
-	@echo "  postgres-stop  - Stop PostgreSQL container"
-	@echo "  postgres-clean - Stop and clean PostgreSQL data"
-	@echo "  build          - Build the application"
-	@echo "  run            - Build and run the application"
+	@echo "  postgres            - Start PostgreSQL container"
+	@echo "  postgres-stop       - Stop PostgreSQL container"
+	@echo "  postgres-clean      - Stop and clean PostgreSQL data"
+	@echo "  notification-service - Start notification service container"
+	@echo "  notification-stop   - Stop notification service container"
+	@echo "  build              - Build the application"
+	@echo "  run                - Build and run the application"
 	@echo "  migrate-up     - Run database migrations"
 	@echo "  migrate-down   - Rollback database migrations"
 	@echo "  migrate-create - Create new migration (usage: make migrate-create name=migration_name)"
