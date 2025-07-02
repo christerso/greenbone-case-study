@@ -19,10 +19,12 @@ go.work
 
 # Built binary
 computer-inventory
+bin/
 
 # Environment files
-.env
+#.env
 .env.local
+.env.production
 
 # IDE files
 .vscode/

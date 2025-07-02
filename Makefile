@@ -1,4 +1,4 @@
-.PHONY: postgres postgres-stop postgres-clean build run migrate-up migrate-down migrate-create help
+.PHONY: postgres postgres-stop postgres-clean build run migrate-up migrate-down migrate-create db-tables db-computers help
 
 include .env
 export
@@ -41,6 +41,12 @@ migrate-down:
 migrate-create:
 	migrate create -ext sql -dir migrations -seq $(name)
 
+db-tables:
+	docker exec -it $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "\dt"
+
+db-computers:
+	docker exec -it $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT * FROM computers;"
+
 # Show help
 help:
 	@echo "Available targets:"
@@ -52,6 +58,8 @@ help:
 	@echo "  migrate-up     - Run database migrations"
 	@echo "  migrate-down   - Rollback database migrations"
 	@echo "  migrate-create - Create new migration (usage: make migrate-create name=migration_name)"
+	@echo "  db-tables      - List all tables in the database"
+	@echo "  db-computers   - List all computers in the database"
 	@echo "  help           - Show this help message"
 	@echo ""
 	@echo "Environment variables:"
