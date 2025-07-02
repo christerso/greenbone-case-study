@@ -25,9 +25,18 @@ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lat
 - `make build` - Build the application
 - `make run` - Build and run the application
 
-## API Usage
+## API Endpoints
 
-Add a computer:
+- `POST /api/computers` - Add new computer
+- `GET /api/computers` - Get all computers
+- `GET /api/computers/:id` - Get single computer by ID
+- `PUT /api/computers/:id` - Update/reassign computer
+- `DELETE /api/computers/:id` - Delete computer
+- `GET /api/employees/:employee/computers` - Get computers by employee
+
+## API Usage Examples
+
+**Add a computer:**
 ```bash
 curl -X POST http://localhost:3000/api/computers \
   -H "Content-Type: application/json" \
@@ -38,6 +47,16 @@ curl -X POST http://localhost:3000/api/computers \
     "employee_abbreviation": "mmu",
     "description": "Max Mustermann development laptop"
   }'
+```
+
+**Get all computers:**
+```bash
+curl http://localhost:3000/api/computers
+```
+
+**Get computers by employee:**
+```bash
+curl http://localhost:3000/api/employees/mmu/computers
 ```
 
 ## Services
