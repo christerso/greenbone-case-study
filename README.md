@@ -22,6 +22,9 @@ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lat
 - `make build` - Build the application
 - `make run` - Build and run the application
 
-As a side note. As this is a job test, I am including .env file in the repository.
-Just so you can run the code without any issues.
+### NOTES: 
+
+As this is a job test, I am including .env file in the repository, to make it easy to run the code without any issues.
 Normally, this would be excluded from the repository by the .gitignore file.
+
+I am using basic Golang db calls here, but in production I would prefer GORM or pgx for database operations.
