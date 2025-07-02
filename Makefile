@@ -1,4 +1,4 @@
-.PHONY: postgres postgres-stop postgres-clean notification-service notification-stop build run migrate-up migrate-down migrate-create db-tables db-computers help
+.PHONY: postgres postgres-stop postgres-clean notification-service notification-stop build run migrate-up migrate-down migrate-create db-computers help
 
 include .env
 export
@@ -73,9 +73,3 @@ help:
 	@echo "  db-tables      - List all tables in the database"
 	@echo "  db-computers   - List all computers in the database"
 	@echo "  help           - Show this help message"
-	@echo ""
-	@echo "Environment variables:"
-	@echo "  POSTGRES_USER     - PostgreSQL username (default: postgres)"
-	@echo "  POSTGRES_PASSWORD - PostgreSQL password (default: password)"
-	@echo "  POSTGRES_DB       - PostgreSQL database name (default: greenbone_inventory)"
-	@echo "  POSTGRES_PORT     - PostgreSQL port (default: 5432)"

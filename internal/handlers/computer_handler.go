@@ -39,13 +39,7 @@ func (h *ComputerHandler) CreateComputer(c *gin.Context) {
 		return
 	}
 
-	if computer.EmployeeAbbreviation != nil {
-		count, err := h.repo.CountByEmployee(*computer.EmployeeAbbreviation)
-		if err == nil && count >= 3 {
-			go h.sendNotification(*computer.EmployeeAbbreviation, count)
-		}
-	}
-
+	h.checkAndNotify(&computer)
 	c.JSON(http.StatusCreated, computer)
 }
 
@@ -97,13 +91,7 @@ func (h *ComputerHandler) UpdateComputer(c *gin.Context) {
 		return
 	}
 
-	if computer.EmployeeAbbreviation != nil {
-		count, err := h.repo.CountByEmployee(*computer.EmployeeAbbreviation)
-		if err == nil && count >= 3 {
-			go h.sendNotification(*computer.EmployeeAbbreviation, count)
-		}
-	}
-
+	h.checkAndNotify(&computer)
 	c.JSON(http.StatusOK, computer)
 }
 
@@ -142,20 +130,20 @@ func (h *ComputerHandler) sendNotification(employeeAbbr string, count int) {
 }
 
 func (h *ComputerHandler) ValidateComputer(computer *models.Computer) error {
-	if strings.TrimSpace(computer.ComputerName) == "" {
-		return fmt.Errorf("computer_name is required")
+	if err := validateRequired("computer_name", computer.ComputerName); err != nil {
+		return err
 	}
 
-	if strings.TrimSpace(computer.IPAddress) == "" {
-		return fmt.Errorf("ip_address is required")
+	if err := validateRequired("ip_address", computer.IPAddress); err != nil {
+		return err
 	}
 
 	if net.ParseIP(computer.IPAddress) == nil {
 		return fmt.Errorf("invalid ip_address format")
 	}
 
-	if strings.TrimSpace(computer.MACAddress) == "" {
-		return fmt.Errorf("mac_address is required")
+	if err := validateRequired("mac_address", computer.MACAddress); err != nil {
+		return err
 	}
 
 	macRegex := regexp.MustCompile(`^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`)
@@ -171,5 +159,21 @@ func (h *ComputerHandler) ValidateComputer(computer *models.Computer) error {
 		*computer.EmployeeAbbreviation = abbr
 	}
 
+	return nil
+}
+
+func (h *ComputerHandler) checkAndNotify(computer *models.Computer) {
+	if computer.EmployeeAbbreviation != nil {
+		count, err := h.repo.CountByEmployee(*computer.EmployeeAbbreviation)
+		if err == nil && count >= 3 {
+			go h.sendNotification(*computer.EmployeeAbbreviation, count)
+		}
+	}
+}
+
+func validateRequired(fieldName, value string) error {
+	if strings.TrimSpace(value) == "" {
+		return fmt.Errorf("%s is required", fieldName)
+	}
 	return nil
 }
