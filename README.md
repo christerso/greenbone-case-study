@@ -63,6 +63,9 @@ Security considerations for production which I thought of during development:
 - Device lifecycle management (active/inactive/returned status)
 I am sure there are plenty more things to do like: audit logging for all device assignments etc...
 
+By the way, the notification service README has an inconsistency: https://github.com/greenbone/exercise-admin-notification
+It mentions /api/notification in the description but the actual endpoint is /api/notify.
+
 Thank you for the opportunity to do the test. I hope you find the code and documentation clear and easy to follow.
 Looking forward to your feedback!
 

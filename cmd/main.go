@@ -31,7 +31,6 @@ func main() {
 		os.Exit(1)
 	}
 	defer func() {
-		log.Info("Closing database connection")
 		err := db.Close()
 		if err != nil {
 			log.Error("Failed to close database connection", slog.String("error", err.Error()))
