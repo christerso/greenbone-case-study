@@ -29,7 +29,7 @@ func (h *ComputerHandler) CreateComputer(c *gin.Context) {
 		return
 	}
 
-	if err := h.validateComputer(&computer); err != nil {
+	if err := h.ValidateComputer(&computer); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -86,7 +86,7 @@ func (h *ComputerHandler) UpdateComputer(c *gin.Context) {
 		return
 	}
 
-	if err := h.validateComputer(&computer); err != nil {
+	if err := h.ValidateComputer(&computer); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -141,7 +141,7 @@ func (h *ComputerHandler) sendNotification(employeeAbbr string, count int) {
 	defer resp.Body.Close()
 }
 
-func (h *ComputerHandler) validateComputer(computer *models.Computer) error {
+func (h *ComputerHandler) ValidateComputer(computer *models.Computer) error {
 	if strings.TrimSpace(computer.ComputerName) == "" {
 		return fmt.Errorf("computer_name is required")
 	}
