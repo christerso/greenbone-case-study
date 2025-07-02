@@ -1,6 +1,7 @@
 package main
 
 import (
+	"greenbone-computer-inventory/internal/api"
 	"greenbone-computer-inventory/internal/config"
 	"greenbone-computer-inventory/internal/database"
 	"greenbone-computer-inventory/internal/handlers"
@@ -25,27 +26,19 @@ func main() {
 	}
 	defer func() {
 		log.Info("Closing database connection")
-		db.Close()
+		err := db.Close()
+		if err != nil {
+			log.Error("Failed to close database connection", slog.String("error", err.Error()))
+			return
+		}
 	}()
 
 	repo := repository.NewComputerRepository(db)
 	handler := handlers.NewComputerHandler(repo)
 
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
-
-	api := router.Group("/api")
-	{
-		api.POST("/computers", handler.CreateComputer)
-		api.GET("/computers", handler.GetAllComputers)
-		api.GET("/computers/:id", handler.GetComputer)
-		api.PUT("/computers/:id", handler.UpdateComputer)
-		api.DELETE("/computers/:id", handler.DeleteComputer)
-		api.GET("/employees/:employee/computers", handler.GetComputersByEmployee)
-	}
+	api.SetupRoutes(router, handler, db)
 
 	log.Info("Server starting", slog.String("port", cfg.Port))
 	err = router.Run(":" + cfg.Port)
