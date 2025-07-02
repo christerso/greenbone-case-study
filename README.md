@@ -19,9 +19,7 @@ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lat
 - `make postgres` - Start PostgreSQL container
 - `make notification-service` - Start notification service container
 - `make migrate-up` - Run database migrations
-- `make db-tables` - List tables in database
 - `make db-computers` - List all computers in database
-- `make db-clear` - Clear all computers from database
 - `make build` - Build the application
 - `make run` - Build and run the application
 

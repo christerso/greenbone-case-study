@@ -54,14 +54,8 @@ migrate-down:
 migrate-create:
 	migrate create -ext sql -dir migrations -seq $(name)
 
-db-tables:
-	docker exec -it $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "\dt"
-
 db-computers:
 	docker exec -it $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT * FROM computers;"
-
-db-clear:
-	docker exec $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "DELETE FROM computers;"
 
 # Show help
 help:

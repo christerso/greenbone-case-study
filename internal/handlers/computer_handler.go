@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"greenbone-computer-inventory/internal/models"
 	"greenbone-computer-inventory/internal/repository"
+	"net"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +25,11 @@ func NewComputerHandler(repo *repository.ComputerRepository) *ComputerHandler {
 func (h *ComputerHandler) CreateComputer(c *gin.Context) {
 	var computer models.Computer
 	if err := c.ShouldBindJSON(&computer); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.validateComputer(&computer); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -78,6 +86,11 @@ func (h *ComputerHandler) UpdateComputer(c *gin.Context) {
 		return
 	}
 
+	if err := h.validateComputer(&computer); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	computer.ID = id
 	if err := h.repo.Update(&computer); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -126,4 +139,37 @@ func (h *ComputerHandler) sendNotification(employeeAbbr string, count int) {
 		return
 	}
 	defer resp.Body.Close()
+}
+
+func (h *ComputerHandler) validateComputer(computer *models.Computer) error {
+	if strings.TrimSpace(computer.ComputerName) == "" {
+		return fmt.Errorf("computer_name is required")
+	}
+
+	if strings.TrimSpace(computer.IPAddress) == "" {
+		return fmt.Errorf("ip_address is required")
+	}
+
+	if net.ParseIP(computer.IPAddress) == nil {
+		return fmt.Errorf("invalid ip_address format")
+	}
+
+	if strings.TrimSpace(computer.MACAddress) == "" {
+		return fmt.Errorf("mac_address is required")
+	}
+
+	macRegex := regexp.MustCompile(`^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$`)
+	if !macRegex.MatchString(computer.MACAddress) {
+		return fmt.Errorf("invalid mac_address format")
+	}
+
+	if computer.EmployeeAbbreviation != nil {
+		abbr := strings.TrimSpace(*computer.EmployeeAbbreviation)
+		if len(abbr) != 3 {
+			return fmt.Errorf("employee_abbreviation must be exactly 3 characters")
+		}
+		*computer.EmployeeAbbreviation = abbr
+	}
+
+	return nil
 }
