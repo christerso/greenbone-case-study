@@ -70,6 +70,5 @@ help:
 	@echo "  migrate-up     - Run database migrations"
 	@echo "  migrate-down   - Rollback database migrations"
 	@echo "  migrate-create - Create new migration (usage: make migrate-create name=migration_name)"
-	@echo "  db-tables      - List all tables in the database"
 	@echo "  db-computers   - List all computers in the database"
 	@echo "  help           - Show this help message"
