@@ -2,76 +2,69 @@
 
 ## Prerequisites
 
-Install the migrate CLI tool with PostgreSQL support:
+Install the migrate CLI tool:
 ```bash
 go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 ```
 
-## Setup
+## Build, Test and Run
 
 1. Start PostgreSQL: `make postgres`
-2. Start notification service: `make notification-service`
+2. Start notification service: `make notification-service`  
 3. Run migrations: `make migrate-up`
-4. Build and run: `make run`
+4. Build: `make build`
+5. Run: `make run`
+6. Test: `go test ./tests/`
 
-## Available Commands
+## API Usage
 
-- `make postgres` - Start PostgreSQL container
-- `make notification-service` - Start notification service container
-- `make migrate-up` - Run database migrations
-- `make db-computers` - List all computers in database
-- `make build` - Build the application
-- `make run` - Build and run the application
-
-## API Endpoints
-
-- `POST /api/computers` - Add new computer
-- `GET /api/computers` - Get all computers
-- `GET /api/computers/:id` - Get single computer by ID
-- `PUT /api/computers/:id` - Update/reassign computer
-- `DELETE /api/computers/:id` - Delete computer
-- `GET /api/employees/:employee/computers` - Get computers by employee
-
-## API Usage Examples
-
-**Add a computer:**
+Add a computer:
 ```bash
 curl -X POST http://localhost:3000/api/computers \
   -H "Content-Type: application/json" \
   -d '{
     "computer_name": "DEV-LAPTOP-001",
-    "ip_address": "192.168.1.100",
+    "ip_address": "192.168.1.100", 
     "mac_address": "00:11:22:33:44:55",
     "employee_abbreviation": "mmu",
-    "description": "Max Mustermann development laptop"
+    "description": "Development laptop"
   }'
 ```
 
-**Get all computers:**
+Get all computers:
 ```bash
 curl http://localhost:3000/api/computers
 ```
 
-**Get computers by employee:**
+Get computers by employee:
 ```bash
 curl http://localhost:3000/api/employees/mmu/computers
 ```
 
 ## Services
 
-- **Computer Inventory API**: `http://localhost:3000`
-- **Notification Service**: `http://localhost:8080` (Greenbone service)
+- Computer Inventory API: http://localhost:3000
+- Notification Service: http://localhost:8080
 
-### NOTES: 
+## Notes and Amendments
 
-As this is a job test, I am including .env file in the repository, to make it easy to run the code without any issues.
-Normally, this would be excluded from the repository by the .gitignore file.
+I included the .env file in the repository for easy testing. In production this would be excluded.
 
-I am using basic Golang db calls here, but in production I would prefer GORM or pgx for database operations.
+For production use, the following improvements would be needed:
+- Authentication and authorization
+- Comprehensive integration tests  
+- Structured logging with request tracing
+- Rate limiting and input sanitization
+- Monitoring and observability tools
+- Container orchestration setup
 
-## Some notes I took as I wrote the implementation:
-If this was in a production environment, we should also check:
-* Unassigned devices (where there is no abbreviation): Computers with no employee abbreviation could indicate rogue/unauthorized devices on the network
-  If you want to follow CIS Controls, unassigned devices should trigger immediate security notifications rather than being silently stored 
-* When it comes to device lifecycle management, we should probably track all statuses: active/inactive/returned
+Security considerations for production which I thought of during development:
+- Unassigned devices should trigger security alerts per CIS Controls
+- Device lifecycle management (active/inactive/returned status)
+I am sure there are plenty more things to do like: audit logging for all device assignments etc...
 
+Thank you for the opportunity to do the test. I hope you find the code and documentation clear and easy to follow.
+Looking forward to your feedback!
+
+Kind regards,
+Christer Soederlund
