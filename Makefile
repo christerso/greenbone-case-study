@@ -1,4 +1,4 @@
-.PHONY: postgres postgres-stop postgres-clean build run help
+.PHONY: postgres postgres-stop postgres-clean build run migrate-up migrate-down migrate-create help
 
 include .env
 export
@@ -32,6 +32,15 @@ build:
 run: build
 	./bin/computer-inventory
 
+migrate-up:
+	migrate -path migrations -database "$(DATABASE_URL)" up
+
+migrate-down:
+	migrate -path migrations -database "$(DATABASE_URL)" down
+
+migrate-create:
+	migrate create -ext sql -dir migrations -seq $(name)
+
 # Show help
 help:
 	@echo "Available targets:"
@@ -40,6 +49,9 @@ help:
 	@echo "  postgres-clean - Stop and clean PostgreSQL data"
 	@echo "  build          - Build the application"
 	@echo "  run            - Build and run the application"
+	@echo "  migrate-up     - Run database migrations"
+	@echo "  migrate-down   - Rollback database migrations"
+	@echo "  migrate-create - Create new migration (usage: make migrate-create name=migration_name)"
 	@echo "  help           - Show this help message"
 	@echo ""
 	@echo "Environment variables:"
