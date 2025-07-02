@@ -50,15 +50,7 @@ curl http://localhost:3000/api/employees/mmu/computers
 
 I included the .env file in the repository for easy testing. In production this would be excluded.
 
-For production use, the following improvements would be needed:
-- Authentication and authorization
-- Comprehensive integration tests  
-- Structured logging with request tracing
-- Rate limiting and input sanitization
-- Monitoring and observability tools
-- Container orchestration setup
-
-Security considerations for production which I thought of during development:
+Security considerations for production use which I thought of during development:
 - Unassigned devices should trigger security alerts per CIS Controls
 - Device lifecycle management (active/inactive/returned status)
 I am sure there are plenty more things to do like: audit logging for all device assignments etc...
