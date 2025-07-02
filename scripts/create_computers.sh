@@ -1,3 +1,5 @@
+// Simply running curl 3 times to create 3 computers for the same employee
+
 #!/bin/bash
 curl -X POST http://localhost:3000/api/computers \
   -H "Content-Type: application/json" \
