@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"greenbone-computer-inventory/internal/models"
 	"greenbone-computer-inventory/internal/repository"
+	"io"
 	"net"
 	"net/http"
 	"regexp"
@@ -126,7 +127,12 @@ func (h *ComputerHandler) sendNotification(employeeAbbr string, count int) {
 	if err != nil {
 		return
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Printf("Error closing response body: %v\n", err)
+		}
+	}(resp.Body)
 }
 
 func (h *ComputerHandler) ValidateComputer(computer *models.Computer) error {
