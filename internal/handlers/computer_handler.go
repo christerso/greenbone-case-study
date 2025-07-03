@@ -7,6 +7,7 @@ import (
 	"greenbone-computer-inventory/internal/models"
 	"greenbone-computer-inventory/internal/repository"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"regexp"
@@ -16,11 +17,15 @@ import (
 )
 
 type ComputerHandler struct {
-	repo *repository.ComputerRepository
+	repo   *repository.ComputerRepository
+	logger *slog.Logger
 }
 
-func NewComputerHandler(repo *repository.ComputerRepository) *ComputerHandler {
-	return &ComputerHandler{repo: repo}
+func NewComputerHandler(repo *repository.ComputerRepository, logger *slog.Logger) *ComputerHandler {
+	return &ComputerHandler{
+		repo:   repo,
+		logger: logger,
+	}
 }
 
 func (h *ComputerHandler) CreateComputer(c *gin.Context) {
@@ -36,6 +41,7 @@ func (h *ComputerHandler) CreateComputer(c *gin.Context) {
 	}
 
 	if err := h.repo.Create(&computer); err != nil {
+		h.logger.Error("Failed to create computer", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -48,6 +54,7 @@ func (h *ComputerHandler) GetComputer(c *gin.Context) {
 	id := c.Param("id")
 	computer, err := h.repo.GetByID(id)
 	if err != nil {
+		h.logger.Error("Failed to get computer", slog.String("id", id), slog.String("error", err.Error()))
 		c.JSON(http.StatusNotFound, gin.H{"error": "Computer not found"})
 		return
 	}
@@ -120,19 +127,25 @@ func (h *ComputerHandler) sendNotification(employeeAbbr string, count int) {
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
+		h.logger.Error("Failed to marshal notification payload", slog.String("error", err.Error()))
 		return
 	}
 
+	h.logger.Info("Sending notification", slog.Int("computer_count", count))
+
 	resp, err := http.Post("http://localhost:8080/api/notify", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
+		h.logger.Error("Failed to send notification", slog.String("error", err.Error()))
 		return
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			fmt.Printf("Error closing response body: %v\n", err)
+			h.logger.Error("Error closing response body", slog.String("error", err.Error()))
 		}
 	}(resp.Body)
+
+	h.logger.Info("Notification sent successfully")
 }
 
 func (h *ComputerHandler) ValidateComputer(computer *models.Computer) error {

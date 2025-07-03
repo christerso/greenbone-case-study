@@ -39,7 +39,7 @@ func main() {
 	}()
 
 	repo := repository.NewComputerRepository(db)
-	handler := handlers.NewComputerHandler(repo)
+	handler := handlers.NewComputerHandler(repo, log)
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
