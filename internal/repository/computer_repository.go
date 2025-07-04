@@ -113,3 +113,43 @@ func (r *ComputerRepository) CountByEmployee(employeeAbbr string) (int, error) {
 	err := r.db.QueryRow(query, employeeAbbr).Scan(&count)
 	return count, err
 }
+
+func (r *ComputerRepository) CreateWithNotificationCheck(computer *models.Computer) (int, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	// Insert computer
+	query := `
+		INSERT INTO computers (computer_name, ip_address, mac_address, employee_abbreviation, description)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id, created_at, updated_at`
+
+	err = tx.QueryRow(query, computer.ComputerName, computer.IPAddress, computer.MACAddress,
+		computer.EmployeeAbbreviation, computer.Description).Scan(
+		&computer.ID, &computer.CreatedAt, &computer.UpdatedAt)
+	if err != nil {
+		return 0, err
+	}
+
+	// Count computers for this employee within the transaction
+	var count int
+	if computer.EmployeeAbbreviation != nil {
+		countQuery := `SELECT COUNT(DISTINCT mac_address) FROM computers WHERE employee_abbreviation = $1`
+		err = tx.QueryRow(countQuery, *computer.EmployeeAbbreviation).Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

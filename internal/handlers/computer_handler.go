@@ -40,13 +40,17 @@ func (h *ComputerHandler) CreateComputer(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.Create(&computer); err != nil {
+	count, err := h.repo.CreateWithNotificationCheck(&computer)
+	if err != nil {
 		h.logger.Error("Failed to create computer", slog.String("error", err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	h.checkAndNotify(&computer)
+	if computer.EmployeeAbbreviation != nil && count >= 3 {
+		go h.sendNotification(*computer.EmployeeAbbreviation, count)
+	}
+
 	c.JSON(http.StatusCreated, computer)
 }
 
@@ -99,7 +103,13 @@ func (h *ComputerHandler) UpdateComputer(c *gin.Context) {
 		return
 	}
 
-	h.checkAndNotify(&computer)
+	if computer.EmployeeAbbreviation != nil {
+		count, err := h.repo.CountByEmployee(*computer.EmployeeAbbreviation)
+		if err == nil && count >= 3 {
+			go h.sendNotification(*computer.EmployeeAbbreviation, count)
+		}
+	}
+
 	c.JSON(http.StatusOK, computer)
 }
 
@@ -179,15 +189,6 @@ func (h *ComputerHandler) ValidateComputer(computer *models.Computer) error {
 	}
 
 	return nil
-}
-
-func (h *ComputerHandler) checkAndNotify(computer *models.Computer) {
-	if computer.EmployeeAbbreviation != nil {
-		count, err := h.repo.CountByEmployee(*computer.EmployeeAbbreviation)
-		if err == nil && count >= 3 {
-			go h.sendNotification(*computer.EmployeeAbbreviation, count)
-		}
-	}
 }
 
 func validateRequired(fieldName, value string) error {
